@@ -23,4 +23,7 @@ public interface GreetingClient {
 
     @MessageMapping("graphql")
     Mono<GraphqlPayload<Greeting>> addGreeting(@Payload Mono<Map<String, String>> graphQLQuery);
+
+    @MessageMapping("graphql")
+    Flux<GraphqlPayload<Greeting>> greetingByMessage(@Payload Mono<Map<String, String>> graphqlQuery);
 }

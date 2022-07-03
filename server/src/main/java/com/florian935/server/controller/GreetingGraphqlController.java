@@ -25,11 +25,18 @@ public class GreetingGraphqlController {
     Flux<Greeting> greetings() {
             return Flux.fromStream(Stream.generate(() -> new Greeting("Hello, world @ " + Instant.now())))
                     .delayElements(Duration.ofSeconds(1))
-                    .take(10);
+                    .take(5);
     }
 
     @MutationMapping
     Mono<Greeting> addGreeting(@Argument String message) {
         return Mono.just(new Greeting(message));
+    }
+
+    @SubscriptionMapping
+    Flux<Greeting> greetingByMessage(@Argument String message) {
+        return Flux.fromStream(Stream.generate(() -> new Greeting("Greeting from message ## " + message)))
+                .delayElements(Duration.ofSeconds(1))
+                .take(5);
     }
 }

@@ -17,68 +17,83 @@ import java.util.Map;
 @EnableRSocketClients
 public class ClientApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ClientApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ClientApplication.class, args);
+    }
 
-	@Bean
-	ApplicationRunner requestRsocketGraphqlQuery(GreetingClient greetingClient) {
-		return event -> {
-			final String graphqlQuery = """
-					query {
-						greeting {
-							message
-						}
-					}
-					""";
+    @Bean
+    ApplicationRunner requestRsocketGraphqlQuery(GreetingClient greetingClient) {
+        return event -> {
+            final String graphqlQuery = """
+                    query {
+                    	greeting {
+                    		message
+                    	}
+                    }
+                    """;
 
-			final Mono<GraphqlPayload<Greeting>> reply = greetingClient.greeting(
-					Mono.just(
-							Map.of("query", graphqlQuery)
-					));
+			final Mono<Map<String, String>> query = buildQuery(graphqlQuery);
+			final Mono<GraphqlPayload<Greeting>> reply = greetingClient.greeting(query);
+            reply.subscribe(System.out::println);
+        };
+    }
 
-			reply.subscribe(System.out::println);
-		};
-	}
+    @Bean
+    ApplicationRunner requestRsocketGraphqlSubscription(GreetingClient greetingClient) {
+        return event -> {
+            final String graphqlSubscription = """
+                    	subscription {
+                    		greetings {
+                    			message
+                    		}
+                    	}
+                    """;
 
-	@Bean
-	ApplicationRunner requestRsocketGraphqlSubscription(GreetingClient greetingClient) {
-		return event -> {
-			final String graphqlSubscription = """
-						subscription {
-							greetings {
-								message
-							}
-						}
-					""";
+            final Mono<Map<String, String>> query = buildQuery(graphqlSubscription);
+            final Flux<GraphqlPayload<Greeting>> reply = greetingClient.greetings(query);
+            reply.subscribe(System.out::println);
+        };
+    }
 
-			final Flux<GraphqlPayload<Greeting>> reply = greetingClient.greetings(
-					Mono.just(
-							Map.of("query", graphqlSubscription)
-					));
+    @Bean
+    ApplicationRunner requestRsocketGraphqlMutation(GreetingClient greetingClient) {
+        return event -> {
+            final String message = "Hello from mutation response !";
+            final String graphqlMutation = """
+                    	mutation {
+                    		addGreeting(message: "%s") {
+                    			message
+                    		}
+                    	}
+                    """.formatted(message);
 
-			reply.subscribe(System.out::println);
-		};
-	}
+            final Mono<Map<String, String>> query = buildQuery(graphqlMutation);
+            final Mono<GraphqlPayload<Greeting>> reply = greetingClient.addGreeting(query);
+            reply.subscribe(System.out::println);
+        };
+    }
 
-	@Bean
-	ApplicationRunner requestRsocketGraphqlMutation(GreetingClient greetingClient) {
-		return event -> {
-			final String message = "Hello from mutation response !";
-			final String graphqlMutation = """
-						mutation {
-							addGreeting(message: "%s") {
-								message
-							}
-						}
-					""".formatted(message);
+    @Bean
+    ApplicationRunner requestRsocketGraphqlSubscriptionWithArgument(GreetingClient greetingClient) {
+        return event -> {
+            final String message = "Salut !";
+            final String graphqlSubscription = """
+                    	subscription {
+                    		greetingByMessage(message: "%s") {
+                    			message
+                    		}
+                    	}
+                    """.formatted(message);
 
-			final Mono<GraphqlPayload<Greeting>> reply = greetingClient.addGreeting(
-					Mono.just(
-							Map.of("query", graphqlMutation)
-					));
+            final Mono<Map<String, String>> query = buildQuery(graphqlSubscription);
+            final Flux<GraphqlPayload<Greeting>> reply = greetingClient.greetingByMessage(query);
+            reply.subscribe(System.out::println);
+        };
+    }
 
-			reply.subscribe(System.out::println);
-		};
-	}
+    private Mono<Map<String, String>> buildQuery(String graphqlQuery) {
+        return Mono.just(
+                Map.of("query", graphqlQuery)
+        );
+    }
 }

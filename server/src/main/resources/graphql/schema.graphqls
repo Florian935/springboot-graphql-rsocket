@@ -4,6 +4,7 @@ type Query {
 
 type Subscription {
     greetings: Greeting
+    greetingByMessage(message: String): Greeting
 }
 
 type Mutation {
