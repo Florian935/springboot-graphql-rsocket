@@ -64,13 +64,14 @@ public class ClientApplication {
 	@Bean
 	ApplicationRunner requestRsocketGraphqlMutation(GreetingClient greetingClient) {
 		return event -> {
+			final String message = "Hello from mutation response !";
 			final String graphqlMutation = """
 						mutation {
-							addGreeting(message: "Hello") {
+							addGreeting(message: "%s") {
 								message
 							}
 						}
-					""";
+					""".formatted(message);
 
 			final Mono<GraphqlPayload<Greeting>> reply = greetingClient.addGreeting(
 					Mono.just(
