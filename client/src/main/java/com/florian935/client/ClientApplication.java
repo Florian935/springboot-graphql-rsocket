@@ -25,7 +25,7 @@ public class ClientApplication {
 	ApplicationRunner requestRsocketGraphqlQuery(GreetingClient greetingClient) {
 		return event -> {
 			final String graphqlQuery = """
-					{
+					query {
 						greeting {
 							message
 						}
@@ -55,6 +55,26 @@ public class ClientApplication {
 			final Flux<GraphqlPayload<Greeting>> reply = greetingClient.greetings(
 					Mono.just(
 							Map.of("query", graphqlSubscription)
+					));
+
+			reply.subscribe(System.out::println);
+		};
+	}
+
+	@Bean
+	ApplicationRunner requestRsocketGraphqlMutation(GreetingClient greetingClient) {
+		return event -> {
+			final String graphqlMutation = """
+						mutation {
+							addGreeting(message: "Hello") {
+								message
+							}
+						}
+					""";
+
+			final Mono<GraphqlPayload<Greeting>> reply = greetingClient.addGreeting(
+					Mono.just(
+							Map.of("query", graphqlMutation)
 					));
 
 			reply.subscribe(System.out::println);
