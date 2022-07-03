@@ -1,3 +1,7 @@
 type Query {
     greeting: Greeting
 }
+
+type Subscription {
+    greetings: Greeting
+}

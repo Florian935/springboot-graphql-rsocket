@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.retrosocket.EnableRSocketClients;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -21,7 +22,7 @@ public class ClientApplication {
 	}
 
 	@Bean
-	ApplicationRunner run(GreetingClient greetingClient) {
+	ApplicationRunner requestRsocketGraphqlQuery(GreetingClient greetingClient) {
 		return event -> {
 			final String graphqlQuery = """
 					{
@@ -34,6 +35,26 @@ public class ClientApplication {
 			final Mono<GraphqlPayload<Greeting>> reply = greetingClient.greeting(
 					Mono.just(
 							Map.of("query", graphqlQuery)
+					));
+
+			reply.subscribe(System.out::println);
+		};
+	}
+
+	@Bean
+	ApplicationRunner requestRsocketGraphqlSubscription(GreetingClient greetingClient) {
+		return event -> {
+			final String graphqlSubscription = """
+						subscription {
+							greetings {
+								message
+							}
+						}
+					""";
+
+			final Flux<GraphqlPayload<Greeting>> reply = greetingClient.greetings(
+					Mono.just(
+							Map.of("query", graphqlSubscription)
 					));
 
 			reply.subscribe(System.out::println);
