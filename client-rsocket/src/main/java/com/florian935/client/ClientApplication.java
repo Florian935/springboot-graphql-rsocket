@@ -39,6 +39,24 @@ public class ClientApplication {
     }
 
     @Bean
+    ApplicationRunner requestRsocketGraphqlQueryWithPayload(GreetingClient greetingClient) {
+        return event -> {
+            final String message = "Hello from query response !";
+            final String graphqlQuery = """
+                    query {
+                    	greetingMessage(message: "%s") {
+                    		message
+                    	}
+                    }
+                    """.formatted(message);
+
+            final Mono<Map<String, String>> query = buildQuery(graphqlQuery);
+            final Mono<GraphqlPayload<Greeting>> reply = greetingClient.greeting(query);
+            reply.subscribe(System.out::println);
+        };
+    }
+
+    @Bean
     ApplicationRunner requestRsocketGraphqlSubscription(GreetingClient greetingClient) {
         return event -> {
             final String graphqlSubscription = """
