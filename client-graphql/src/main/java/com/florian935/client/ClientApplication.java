@@ -96,6 +96,25 @@ public class ClientApplication {
 	}
 
 	@Bean
+	ApplicationRunner rSocketGraphQlClientQueryWithPayload(RSocketGraphQlClient rSocketGraphQlClient) {
+		return event -> {
+			final String rSocketRequestDocument = """
+						query greetingMessage($message: String) {
+							greetingMessage(message: $message) {
+								message
+							}
+						}
+					""";
+			final Mono<Greeting> response = rSocketGraphQlClient.document(rSocketRequestDocument)
+					.variable("message", "Hello RSocket Query")
+					.retrieve("greetingMessage")
+					.toEntity(Greeting.class);
+
+			response.subscribe(greeting -> System.out.println("RSOCKET QUERY WITH PAYLOAD ## " + greeting));
+		};
+	}
+
+	@Bean
 	ApplicationRunner rSocketGraphQlClientMutation(RSocketGraphQlClient rSocketGraphQlClient) {
 		return event -> {
 			final String rSocketRequestDocument = """
