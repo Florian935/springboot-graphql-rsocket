@@ -30,7 +30,28 @@ public class ClientApplication {
 							.retrieve("greeting")
 							.toEntity(Greeting.class);
 
-			response.subscribe(greeting -> System.out.println("HTTP ## " + greeting));
+			response.subscribe(greeting -> System.out.println("HTTP QUERY ## " + greeting));
+
+		};
+	}
+
+	@Bean
+	ApplicationRunner httpGraphQlClientMutation(HttpGraphQlClient httpGraphQlClient) {
+		return event -> {
+			final String httpRequestDocument = """
+						mutation {
+							addGreeting(message: "a") {
+								message
+							}
+						}
+					""";
+
+			final Mono<Greeting> response = httpGraphQlClient.document(httpRequestDocument)
+					.attribute("message", "Hello Worldzer")
+					.retrieve("addGreeting")
+					.toEntity(Greeting.class);
+
+			response.subscribe(greeting -> System.out.println("HTTP MUTATION ## " + greeting));
 
 		};
 	}
@@ -49,7 +70,7 @@ public class ClientApplication {
 					.retrieve("greeting")
 					.toEntity(Greeting.class);
 
-			response.subscribe(greeting -> System.out.println("RSOCKET ## " + greeting));
+			response.subscribe(greeting -> System.out.println("RSOCKET QUERY ## " + greeting));
 		};
 	}
 }
