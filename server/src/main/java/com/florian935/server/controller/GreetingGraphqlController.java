@@ -39,4 +39,9 @@ public class GreetingGraphqlController {
                 .delayElements(Duration.ofSeconds(1))
                 .take(5);
     }
+
+    @QueryMapping
+    Mono<Greeting> greetingMessage(@Argument String message) {
+        return Mono.just(new Greeting(message));
+    }
 }

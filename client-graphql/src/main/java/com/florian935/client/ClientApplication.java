@@ -37,6 +37,26 @@ public class ClientApplication {
 	}
 
 	@Bean
+	ApplicationRunner httpGraphQlClientQueryWithPayload(HttpGraphQlClient httpGraphQlClient) {
+		return event -> {
+			final String httpRequestDocument = """
+						query greetingMessage($message: String) {
+							greetingMessage(message: $message) {
+								message
+							}
+						}
+					""";
+			final Mono<Greeting> response = httpGraphQlClient.document(httpRequestDocument)
+					.variable("message", "Hello Http Query")
+					.retrieve("greetingMessage")
+					.toEntity(Greeting.class);
+
+			response.subscribe(greeting -> System.out.println("HTTP QUERY WITH PAYLOAD ## " + greeting));
+
+		};
+	}
+
+	@Bean
 	ApplicationRunner httpGraphQlClientMutation(HttpGraphQlClient httpGraphQlClient) {
 		return event -> {
 			final String httpRequestDocument = """
