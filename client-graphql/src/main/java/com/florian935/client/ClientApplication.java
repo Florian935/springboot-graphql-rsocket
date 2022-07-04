@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.graphql.client.RSocketGraphQlClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @SpringBootApplication
@@ -91,6 +92,25 @@ public class ClientApplication {
 					.toEntity(Greeting.class);
 
 			response.subscribe(greeting -> System.out.println("RSOCKET MUTATION ## " + greeting));
+		};
+	}
+
+	@Bean
+	ApplicationRunner rSocketGraphQlClientSubscription(RSocketGraphQlClient rSocketGraphQlClient) {
+		return event -> {
+			final String httpRequestDocument = """
+						subscription {
+							greetings {
+								message
+							}
+						}
+					""";
+
+			final Flux<Greeting> response = rSocketGraphQlClient.document(httpRequestDocument)
+					.retrieveSubscription("greetings")
+					.toEntity(Greeting.class);
+
+			response.subscribe(greeting -> System.out.println("RSOCKET SUBSCRIPTION ## " + greeting));
 		};
 	}
 }
