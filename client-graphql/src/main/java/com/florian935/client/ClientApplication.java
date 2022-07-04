@@ -113,4 +113,24 @@ public class ClientApplication {
 			response.subscribe(greeting -> System.out.println("RSOCKET SUBSCRIPTION ## " + greeting));
 		};
 	}
+
+	@Bean
+	ApplicationRunner rSocketGraphQlClientSubscriptionWithPayload(RSocketGraphQlClient rSocketGraphQlClient) {
+		return event -> {
+			final String httpRequestDocument = """
+						subscription greetingByMessage($message: String) {
+							greetingByMessage(message: $message) {
+								message
+							}
+						}
+					""";
+
+			final Flux<Greeting> response = rSocketGraphQlClient.document(httpRequestDocument)
+					.variable("message", "Hello RSocket Subscription")
+					.retrieveSubscription("greetingByMessage")
+					.toEntity(Greeting.class);
+
+			response.subscribe(greeting -> System.out.println("RSOCKET SUBSCRIPTION WITH PAYLOAD ## " + greeting));
+		};
+	}
 }
